@@ -1,75 +1,106 @@
 <!DOCTYPE html>
+<!-- 
+  LANGUAGE SETTING:
+  We set the language to Czech ('cs') for accessibility tools and search engines.
+-->
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
+    <!-- VIEWPORT SETTING: Ensures the site looks good on mobile devices by scaling to the screen width. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Biophysics Bro</title>
     
-    <!-- MathJax pro krásné rovnice (LaTeX style) -->
+    <!-- 
+      EXTERNAL LIBRARIES:
+      1. MathJax: A library to render mathematical equations beautifully (LaTeX style).
+      2. Tailwind CSS: A utility-first CSS framework for rapid styling without writing custom CSS files.
+    -->
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
-    <!-- Load Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Configure Tailwind to use Inter font and simple colors --><script>
+    <!-- 
+      TAILWIND CONFIGURATION:
+      Here we customize Tailwind's default theme. We define our own fonts and color palette
+      so we can use classes like 'text-primary' or 'bg-blood-red' later in the HTML.
+    -->
+    <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        serif: ['Lora', 'serif'],
+                        sans: ['Inter', 'sans-serif'], // Main font for body text
+                        serif: ['Lora', 'serif'],      // Serif font for headings
                     },
                     colors: {
-                        'primary': '#1f2937', // Dark slate gray (for text and buttons)
-                        'secondary': '#4b5563', // Medium gray (for description text)
-                        'background': '#f9fafb', // Lightest gray
-                        'blue-icon-bg': '#c7d2fe', // Light blue for the brain icon container
-                        'blood-red': '#dc2626', // Adjusted red for the new icon style
-                        'hemoglobin-dark': '#991b1b', // Darker red for heme groups
-                        'hemoglobin-light': '#fecaca', // Lighter pink for protein structure
+                        'primary': '#1f2937',    // Dark slate gray (used for main text)
+                        'secondary': '#4b5563',  // Medium gray (used for descriptions)
+                        'background': '#f9fafb', // Very light gray (page background)
+                        'blue-icon-bg': '#c7d2fe', // Light blue background for the brain icon
+                        'blood-red': '#dc2626',    // Red used for the blood cell icon
+                        'hemoglobin-dark': '#991b1b',  // Dark red for detail in icons
+                        'hemoglobin-light': '#fecaca', // Light pink for detail in icons
                     }
                 }
             }
         }
     </script>
+
+    <!-- 
+      CUSTOM CSS:
+      While Tailwind handles most styling, some specific tweaks are easier in standard CSS.
+    -->
     <style>
-        /* Custom styles for better readability and feel */
+        /* Sets the page background color using our custom Tailwind color */
         body {
             background-color: theme('colors.background');
-            min-height: 100vh;
+            min-height: 100vh; /* Ensures the body takes up at least the full screen height */
             display: flex;
-            flex-direction: column;
+            flex-direction: column; /* Stacks header, main, and footer vertically */
         }
-        /* Ensure content width is constrained on large screens */
+        /* Limits the width of text content so it's comfortable to read on wide screens */
         .content-container {
-            max-width: 800px; /* Optimal reading width for text */
+            max-width: 800px; 
         }
+        /* Pushes the footer to the bottom if content is short */
         main {
-            flex-grow: 1; /* Allows main content to push the footer down */
+            flex-grow: 1; 
         }
-        /* Syntax highlighting for code block */
+        /* Styling for code blocks (e.g., Python snippets) */
         pre {
             background-color: #f3f4f6;
             padding: 1rem;
             border-radius: 0.5rem;
-            overflow-x: auto;
+            overflow-x: auto; /* Adds scrollbar if code is too wide */
             font-size: 0.875rem;
             border: 1px solid #e5e7eb;
         }
     </style>
+
+    <!-- GOOGLE FONTS: Loading Inter and Lora fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lora:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
+
+<!-- 
+  BODY:
+  onload="initApp()" runs our JavaScript startup function as soon as the page loads.
+-->
 <body class="font-sans text-primary" onload="initApp()">
 
-    <!-- JavaScript for Client-Side Routing and State Management -->
+    <!-- ==========================================================================
+         JAVASCRIPT LOGIC
+         This acts as the "brain" of the website, handling navigation and content.
+         ========================================================================== -->
     <script>
-        // --- DATA KONFIGURACE: PORTFOLIO ---
+        // --- DATA CONFIGURATION: PORTFOLIO PROJECTS ---
+        // This array holds the data for your portfolio cards. 
+        // To add a new project, simply copy a block { ... }, and paste it here with new details.
         const projects = [
             {
-                id: 'hematopoiesis', 
+                id: 'hematopoiesis', // This ID matches the HTML section ID we want to show
                 title: 'Model Krvetvorby',
                 description: 'Simulace regulace krvetvorby pomocí Mackey-Glassovy diferenciální rovnice se zpožděním. Porovnání zdravého a patologického stavu.',
-                // SVG ikonka (Vektorová/Flat červená krvinka - dle screenshotu)
+                // The SVG icon code is stored here as a string
                 iconSvg: `
                     <svg class="w-16 h-16" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <g transform="rotate(-30 50 50)">
@@ -81,15 +112,16 @@
             },
         ];
 
-        // --- DATA KONFIGURACE: ČLÁNKY (BLOG) ---
-        // Přidali jsme ID a CONTENT (obsah) pro každý článek
+        // --- DATA CONFIGURATION: ARTICLES (BLOG) ---
+        // List of blog articles. This makes it easy to add new posts without touching HTML.
         const articles = [
             {
                 id: 'biofyzika-intro',
                 title: 'Úvod do biofyziky: Proč je to budoucnost?',
                 date: '10. března 2024',
                 readTime: '5 min čtení',
-                summary: 'Biofyzika není jen o složitých rovnicích. Je to most mezi biologickými systémy a fyzikálními zákony, který nám umožňuje pochopit život na molekulární úrovni.',
+                summary: 'Biofyzika není jen o složitých rovnicích. Je to most mezi biologickými systémy a fyzikálními zákony.',
+                // The full HTML content of the article goes here
                 content: `
                     <p class="mb-4">Biofyzika je interdisciplinární věda, která používá metody a teorie fyziky ke studiu biologických systémů. Od molekul, jako je DNA a proteiny, až po složité sítě neuronů v našem mozku.</p>
                     <p class="mb-4">Proč je to důležité? Protože biologie se stává čím dál více kvantitativní vědou. Už nám nestačí jen popsat, že "buňka se dělí". Chceme vědět, jaké síly působí na chromozomy, kolik energie spotřebují molekulární motory a jak se šíří signál po membráně.</p>
@@ -102,32 +134,38 @@
                 title: 'Jak funguje difuze v buňkách?',
                 date: '25. února 2024',
                 readTime: '8 min čtení',
-                summary: 'Vysvětlení náhodné procházky (random walk) a Fickových zákonů v kontextu buněčného transportu. Proč buňky nemohou být libovolně velké?',
+                summary: 'Vysvětlení náhodné procházky (random walk) a Fickových zákonů v kontextu buněčného transportu.',
                 content: `
                     <p class="mb-4">Difuze je základním způsobem transportu látek na krátké vzdálenosti. Je poháněna tepelným pohybem molekul – tzv. Brownovým pohybem.</p>
-                    <p class="mb-4">Klíčovým konceptem je, že čas potřebný k difuzi roste s druhou mocninou vzdálenosti: $$ t \approx \frac{x^2}{2D} $$ Kde <em>D</em> je difuzní koeficient. To znamená, že pokud zdvojnásobíme vzdálenost, difuze trvá čtyřikrát déle.</p>
+                    <p class="mb-4">Klíčovým konceptem je, že čas potřebný k difuzi roste s druhou mocninou vzdálenosti: $$ t \\approx \\frac{x^2}{2D} $$ Kde <em>D</em> je difuzní koeficient. To znamená, že pokud zdvojnásobíme vzdálenost, difuze trvá čtyřikrát déle.</p>
                     <h3 class="text-xl font-bold mt-6 mb-3">Limit velikosti buněk</h3>
                     <p class="mb-4">Právě kvůli této závislosti nemohou být buňky libovolně velké. Kdyby byla bakterie velká jako člověk, kyslík by se difuzí do jejího středu dostal až za miliony let. Proto větší organismy potřebují oběhový systém – aby obešli pomalost difuze na velké vzdálenosti konvekcí (prouděním krve).</p>
                 `
             }
         ];
 
-        // --- APLIKAČNÍ LOGIKA ---
-
+        // --- APPLICATION STATE ---
+        // Determines which page to show based on the URL hash (e.g., #about)
         const initialPage = window.location.hash.substring(1) || 'home';
         let currentPage = initialPage;
 
+        // --- INITIALIZATION ---
+        // Called when the body loads
         function initApp() {
             renderPortfolioGrid();
             renderArticlesList(); 
             renderContent();
         }
 
+        // --- RENDER FUNCTIONS ---
+        // These functions generate HTML strings from the data arrays above and inject them into the page.
+
         function renderPortfolioGrid() {
             const gridContainer = document.getElementById('portfolio-grid');
             if (!gridContainer) return;
 
             let html = '';
+            // Loop through projects and create cards
             projects.forEach(project => {
                 html += `
                 <div onclick="changePage('${project.id}')" class="cursor-pointer group bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition duration-200 overflow-hidden">
@@ -142,6 +180,7 @@
                     </div>
                 </div>`;
             });
+            // Add a placeholder card at the end
             html += `
                 <div class="bg-gray-50 rounded-xl border border-dashed border-gray-200 p-6 flex flex-col items-center justify-center text-center opacity-60">
                     <span class="text-3xl mb-2">🚧</span>
@@ -157,7 +196,6 @@
 
             let html = '';
             articles.forEach(article => {
-                // Zde používáme onclick="openArticle(...)" místo href
                 html += `
                 <article class="flex flex-col sm:flex-row gap-6 p-6 bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition duration-200">
                     <div class="flex-1">
@@ -166,6 +204,7 @@
                             <span class="mx-2">&bull;</span>
                             <span>${article.readTime}</span>
                         </div>
+                        <!-- Clicking title or button opens the specific article -->
                         <h3 class="text-xl font-bold text-primary mb-2 hover:text-blue-600 transition duration-150 cursor-pointer" onclick="openArticle('${article.id}')">
                             ${article.title}
                         </h3>
@@ -181,12 +220,14 @@
             articlesContainer.innerHTML = html;
         }
 
-        // Nová funkce pro otevření článku
+        // --- NAVIGATION FUNCTIONS ---
+
+        // Opens a specific article detail view
         function openArticle(articleId) {
             const article = articles.find(a => a.id === articleId);
             if (!article) return;
 
-            // Naplnění detailu článku
+            // Inject content into the detail page container
             const detailContainer = document.getElementById('article-detail-content');
             detailContainer.innerHTML = `
                 <div class="flex items-center text-sm text-gray-400 mb-4 font-medium uppercase tracking-wide">
@@ -200,57 +241,64 @@
                 </div>
             `;
 
-            // Přepnutí na stránku detailu
+            // Switch view to article detail
             changePage('article-detail');
             
-            // Re-render MathJax pro rovnice v novém obsahu
+            // Trigger MathJax to render any equations in the new content
             if (window.MathJax) {
                 MathJax.typesetPromise();
             }
         }
 
+        // General function to switch "pages" (sections)
         function changePage(pageName) {
             currentPage = pageName;
+            // Update the browser URL hash (e.g., #about) without reloading
             window.location.hash = pageName;
             renderContent();
+            // Scroll to top for a fresh page feel
             window.scrollTo(0, 0);
         }
 
+        // The core router: decides what to show and hide based on 'currentPage'
         function renderContent() {
             const mainContent = document.getElementById('main-content');
             const topNav = document.getElementById('top-navbar');
             
             if (!mainContent || !topNav) return;
 
-            // Seznam všech platných ID sekcí (přidáno 'article-detail')
+            // 1. Hide ALL sections initially
             const pages = ['home', 'about', 'articles', 'portfolio', 'tutoring', 'hematopoiesis', 'article-detail']; 
             pages.forEach(id => {
                 const element = document.getElementById(id + '-page');
                 if (element) {
-                    element.classList.add('hidden');
+                    element.classList.add('hidden'); // Tailwind class to hide element
                 }
             });
 
+            // 2. Navigation Bar Logic
+            // We hide the top nav ONLY on the home page (Splash style)
             if (currentPage === 'home') {
                 topNav.classList.add('hidden');
             } else {
                 topNav.classList.remove('hidden');
             }
 
+            // 3. Show the requested section
             const activePageElement = document.getElementById(currentPage + '-page');
             if (activePageElement) {
                 activePageElement.classList.remove('hidden');
             } else {
-                // Fallback na home
+                // Fallback: If page doesn't exist, go to home
                 currentPage = 'home';
                 document.getElementById('home-page')?.classList.remove('hidden');
                 topNav.classList.add('hidden');
             }
         }
 
+        // Listen for browser "Back" and "Forward" buttons
         window.addEventListener('hashchange', () => {
             const newPage = window.location.hash.substring(1) || 'home';
-            // Simple check to prevent infinite loops or redundant renders
             if (newPage !== currentPage) {
                 currentPage = newPage;
                 renderContent();
@@ -258,19 +306,21 @@
         });
     </script>
 
-    <!-- TOP NAVIGATION BAR (Visible on all pages EXCEPT Home) -->
+    <!-- ==========================================================================
+         TOP NAVIGATION BAR
+         Visible on all pages EXCEPT Home. Sticky means it stays at the top when scrolling.
+         ========================================================================== -->
     <nav id="top-navbar" class="sticky top-0 z-10 bg-white border-b border-gray-100 shadow-sm hidden">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center">
             
-            <!-- Site Title / Home Link (Far left) -->
+            <!-- Site Title (Left side) -->
             <a href="#home" onclick="changePage('home')" class="text-xl font-bold font-serif text-primary hover:text-secondary transition duration-150 whitespace-nowrap mb-3 md:mb-0 md:mr-auto">
                 The Biophysics Bro
             </a>
 
-            <!-- Navigation Buttons (Far right) -->
+            <!-- Menu Links (Right side) -->
             <div class="flex flex-wrap justify-center md:justify-end gap-3 text-sm font-medium">
                 <a href="#about" onclick="changePage('about')" class="block px-3 py-1 bg-primary text-white rounded-lg shadow-sm hover:bg-gray-700 transition duration-150 whitespace-nowrap">O mně</a>
-                <!-- New Articles Button -->
                 <a href="#articles" onclick="changePage('articles')" class="block px-3 py-1 bg-primary text-white rounded-lg shadow-sm hover:bg-gray-700 transition duration-150 whitespace-nowrap">Články</a>
                 <a href="#portfolio" onclick="changePage('portfolio')" class="block px-3 py-1 bg-primary text-white rounded-lg shadow-sm hover:bg-gray-700 transition duration-150 whitespace-nowrap">Portfolio</a>
                 <a href="#tutoring" onclick="changePage('tutoring')" class="block px-3 py-1 bg-primary text-white rounded-lg shadow-sm hover:bg-gray-700 transition duration-150 whitespace-nowrap">Soukromé Doučování</a>
@@ -278,22 +328,25 @@
         </div>
     </nav>
 
-    <!-- MAIN CONTENT CONTAINER -->
+    <!-- ==========================================================================
+         MAIN CONTENT CONTAINER
+         This holds all the "pages" (sections). JavaScript shows/hides them.
+         ========================================================================== -->
     <div id="main-content" class="content-container mx-auto px-4 sm:px-6 lg:px-8 mt-8 mb-20">
 
-        <!-- 1. HOME PAGE CONTENT (Splash Page Style) -->
+        <!-- 1. HOME PAGE (Splash Screen) -->
         <section id="home-page" class="hidden">
             <div class="bg-white py-12 mb-12">
                 <div class="text-center">
                     
-                    <!-- Icon/Image -->
+                    <!-- Brain Icon -->
                     <div class="mx-auto w-24 h-24 sm:w-28 sm:h-28 bg-blue-icon-bg rounded-lg flex items-center justify-center mb-6 shadow-md">
                         <svg class="w-16 h-16 text-secondary" fill="currentColor" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
                             <path d="M495.9 144c-3.1-13.4-14.9-23.7-29.7-25.2C445.6 115.5 410 96 368 96c-59 0-112.5 13.9-158.4 45.6-3.8 2.6-7.3 5.4-10.7 8.5-6.5-7.5-13.9-14-22.3-19.6C129.5 95.9 76 80 16 80 7.3 80 0 87.3 0 96v256c0 8.7 7.3 16 16 16 48.4 0 97.4 12.8 143.9 33.9 44.5 20.3 93.9 31.9 144.1 31.9 48.6 0 96.5-11.2 140.7-31.4 44.5-20.4 92.5-32.6 140.5-32.6 8.7 0 16-7.3 16-16V160c0-8.7-7.3-16-16-16zm-388.5 16C122.9 144 144 152 144 152v-48c-1.3-1.6-4.9-4-15.3-4C102.3 100 68 120 40.2 144c29.1-13.3 59.8-20.7 90.7-21.7zM368 208c-4.4 0-8-3.6-8-8v-32c0-4.4 3.6-8 8-8s8 3.6 8 8v32c0 4.4-3.6 8-8 8zm96-48c-1.3-1.6-4.9-4-15.3-4-26.4 0-51.2 7-73.4 19.3-3.9-6.3-8.6-12-14.1-17.1-34.9-32.1-85.1-49.3-143.2-49.3-46.7 0-93.7 10.5-135.2 30.6-40.4 19.3-77.5 44.6-109.8 76.8 13.5 6.4 28.1 11.2 43.1 14.4 32.8 6.9 67.5 10.4 102.4 10.4 39.4 0 78.4-4.8 116.1-14.3 35.8-9.1 70.3-21.6 103.5-37.4 3.1-1.5 6.4-3.1 9.6-4.9 31.2-18.4 60.1-39.7 85.3-64.4zm0 160c-2.4 0-4.7-.1-7.1-.4-22.1-2.4-43.9-7.2-64.8-14.2-22.6-7.5-44.5-16.7-65.7-27.4-4.4-2.2-9-3.4-13.8-3.4-2.8 0-5.5.6-8.2 1.8-1.5-.7-3.1-1.3-4.7-1.8-4.4-.7-9-.9-13.5-.7-6.9 0-13.9 1.4-20.7 4.2-24.9 10.3-49.1 21.6-72.3 33.9-3.2 1.7-6.5 3.1-9.9 4.2-32.9 10.9-66.5 18.2-101.4 21.6-32.7 3.2-65.2 4.8-97.8 4.8-8.7 0-16-7.3-16-16V160c0-8.7 7.3-16 16-16 48.4 0 97.4 12.8 143.9 33.9 44.5 20.3 93.9 31.9 144.1 31.9 48.6 0 96.5-11.2 140.7-31.4 44.5-20.4 92.5-32.6 140.5-32.6 8.7 0 16-7.3 16-16V160c0-8.7-7.3-16-16-16z"/>
                         </svg>
                     </div>
                     
-                    <!-- Title -->
+                    <!-- Main Title -->
                     <h1 class="text-4xl sm:text-5xl font-serif font-medium text-primary mb-3">
                         The Biophysics Bro
                     </h1>
@@ -303,10 +356,9 @@
                         Popularizace biofyziky a komplexních věd. Blog o výzkumu a úvahách na průsečíku biologických systémů, fyziky a vzdělávání.
                     </p>
 
-                    <!-- Navigation Buttons (Moved here for Home Page ONLY) -->
+                    <!-- Navigation Buttons (Specific to Home Page) -->
                     <nav class="flex flex-wrap justify-center gap-3 text-sm font-medium px-4">
                         <a href="#about" onclick="changePage('about')" class="block px-4 py-2 bg-primary text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-150 whitespace-nowrap">O mně</a>
-                        <!-- New Articles Button -->
                         <a href="#articles" onclick="changePage('articles')" class="block px-4 py-2 bg-primary text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-150 whitespace-nowrap">Články</a>
                         <a href="#portfolio" onclick="changePage('portfolio')" class="block px-4 py-2 bg-primary text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-150 whitespace-nowrap">Portfolio</a>
                         <a href="#tutoring" onclick="changePage('tutoring')" class="block px-4 py-2 bg-primary text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-150 whitespace-nowrap">Soukromé Doučování</a>
@@ -316,7 +368,7 @@
             </div>
         </section>
 
-        <!-- 2. O MNĚ (ABOUT) PAGE CONTENT -->
+        <!-- 2. ABOUT PAGE -->
         <section id="about-page" class="hidden">
             <h2 class="text-3xl font-serif font-bold text-primary mb-6 border-b pb-2">O mně</h2>
             <div class="prose max-w-none text-lg text-secondary">
@@ -326,57 +378,48 @@
             </div>
         </section>
 
-        <!-- 3. ČLÁNKY (BLOG) LIST PAGE -->
+        <!-- 3. ARTICLES (BLOG) LIST -->
         <section id="articles-page" class="hidden">
             <h2 class="text-3xl font-serif font-bold text-primary mb-8 border-b pb-2">Články</h2>
             <div class="prose max-w-none text-lg text-secondary mb-8">
                 <p>Zde publikuji své myšlenky, edukativní texty a novinky ze světa biofyziky.</p>
             </div>
-            <!-- Articles List Container -->
-            <div id="articles-list" class="space-y-6">
-                <!-- Content injected by renderArticlesList() -->
-            </div>
+            <!-- Dynamic Content -->
+            <div id="articles-list" class="space-y-6"></div>
         </section>
 
-        <!-- 4. ČLÁNEK DETAIL (Single Article View) -->
+        <!-- 4. ARTICLE DETAIL VIEW -->
         <section id="article-detail-page" class="hidden">
-            <!-- Back link -->
+            <!-- Back Button -->
             <div class="mb-6">
                 <a href="#articles" onclick="changePage('articles')" class="inline-flex items-center text-sm text-secondary hover:text-primary transition duration-150">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                     Zpět na Články
                 </a>
             </div>
-            
-            <!-- Article Content Container -->
-            <div id="article-detail-content">
-                <!-- Content injected by openArticle() -->
-            </div>
+            <!-- Content injected by openArticle() -->
+            <div id="article-detail-content"></div>
         </section>
 
-        <!-- 5. PORTFOLIO PAGE CONTENT -->
+        <!-- 5. PORTFOLIO PAGE -->
         <section id="portfolio-page" class="hidden">
             <h2 class="text-3xl font-serif font-bold text-primary mb-8 border-b pb-2">Portfolio</h2>
-            
-            <!-- Portfolio Grid (Generated by JS) -->
-            <div id="portfolio-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <!-- Content injected by renderPortfolioGrid() -->
-            </div>
+            <!-- Dynamic Grid -->
+            <div id="portfolio-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-6"></div>
         </section>
 
-        <!-- NEW: HEMATOPOIESIS PROJECT PAGE -->
+        <!-- 6. HEMATOPOIESIS PROJECT DETAIL PAGE -->
         <section id="hematopoiesis-page" class="hidden">
-            <!-- Back link -->
             <div class="mb-6">
                 <a href="#portfolio" onclick="changePage('portfolio')" class="inline-flex items-center text-sm text-secondary hover:text-primary transition duration-150">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                     Zpět na Portfolio
                 </a>
             </div>
 
             <h2 class="text-3xl font-serif font-bold text-primary mb-4">Modelování Krvetvorby [Image of hematopoiesis process]</h2>
             
-            <!-- POPULARIZACNI TEXT START -->
+            <!-- POPULAR SCIENCE INTRODUCTION -->
             <div class="prose max-w-none mb-8">
                 <p class="text-lg text-secondary leading-relaxed mb-4">
                     Věděli jste, že vaše tělo každou vteřinu vyrobí miliony nových červených krvinek? Je to fascinující, ale zároveň velmi křehký systém. Červené krvinky totiž nemohou žít věčně – nemají jádro a nedokážou se dělit. Po určité době se "opotřebují" a zaniknou.
@@ -388,14 +431,14 @@
                     Představte si to jako sprchování. Otočíte kohoutkem (povel k výrobě), ale teplá voda (krvinky) teče až po chvíli (zpoždění). Pokud byste netrpělivě točili kohoutkem sem a tam, voda by střídavě vařila a mrazila. Podobně i v našem těle může toto zpoždění způsobit problémy – pokud je příliš dlouhé, hladina krvinek začne nebezpečně kolísat. Tomuto jevu říkáme "dynamická nemoc" a my si ji zde nasimulujeme pomocí matematiky.
                 </p>
             </div>
-            <!-- POPULARIZACNI TEXT END -->
 
+            <!-- TECHNICAL CONTENT -->
             <div class="prose max-w-none">
                 <h3 class="text-xl font-bold text-primary mb-3">Matematický model</h3>
                 <p class="text-secondary mb-4">
                     Základní dynamiku tohoto systému lze popsat pomocí tzv. <strong>Mackey-Glassovy rovnice</strong>. Je to diferenciální rovnice se zpožděním, která říká: "Změna počtu krvinek se rovná tomu, co se vyrobilo (se zpožděním), mínus to, co přirozeně zaniklo."
                     <div class="overflow-x-auto py-4 text-primary text-center text-lg">
-                        <!-- MathJax Formula -->
+                        <!-- MathJax Formula: Changes rate of cell count -->
                         $$ \frac{dc}{dt} = \underbrace{-gc(t)}_{\text{zánik}} + \underbrace{\frac{\lambda c(t - T)}{1 + c^m(t - T)}}_{\text{produkce se zpožděním}} $$
                     </div>
                 </p>
@@ -451,7 +494,7 @@ c_20, lag_20 = solve_blood_production(T_delay=20) # Nemocný
             </div>
         </section>
 
-        <!-- 6. SOUKROMÉ DOUČOVÁNÍ PAGE CONTENT -->
+        <!-- 7. TUTORING PAGE -->
         <section id="tutoring-page" class="hidden">
             <h2 class="text-3xl font-serif font-bold text-primary mb-6 border-b pb-2">Soukromé Doučování</h2>
             <div class="text-secondary text-lg">
@@ -461,11 +504,16 @@ c_20, lag_20 = solve_blood_production(T_delay=20) # Nemocný
 
     </div>
 
-    <!-- Footer (Fixed to bottom regardless of content length) --><footer class="bg-white border-t border-gray-100 py-6 mt-auto">
+    <!-- ==========================================================================
+         FOOTER
+         Always visible at the bottom of the page.
+         ========================================================================== -->
+    <footer class="bg-white border-t border-gray-100 py-6 mt-auto">
         <div class="content-container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-sm text-secondary">
             <p class="mb-4 md:mb-0">&copy; 2024 The Biophysics Bro. Všechna práva vyhrazena.</p>
             <div class="space-x-6">
-                <!-- Instagram link with minimalist SVG logo --><a href="https://www.instagram.com/pavelpatockaaa/" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition duration-150">
+                <!-- Instagram Link -->
+                <a href="https://www.instagram.com/pavelpatockaaa/" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition duration-150">
                     <svg class="w-6 h-6 inline-block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                         <path d="M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
