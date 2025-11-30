@@ -63,11 +63,10 @@
 
     <!-- JavaScript for Client-Side Routing and State Management -->
     <script>
-        // --- DATA KONFIGURACE ---
-        // Zde jednoduše přidávejte nové projekty. HTML se vygeneruje samo.
+        // --- DATA KONFIGURACE: PORTFOLIO ---
         const projects = [
             {
-                id: 'hematopoiesis', // Musí odpovídat ID sekce (např. id="hematopoiesis-page")
+                id: 'hematopoiesis', 
                 title: 'Model Krvetvorby',
                 description: 'Simulace regulace krvetvorby pomocí Mackey-Glassovy diferenciální rovnice se zpožděním. Porovnání zdravého a patologického stavu.',
                 // SVG ikonka (Vektorová/Flat červená krvinka - dle screenshotu)
@@ -80,7 +79,37 @@
                         </g>
                     </svg>`
             },
-            // Zde můžete přidat další objekt pro nový projekt...
+        ];
+
+        // --- DATA KONFIGURACE: ČLÁNKY (BLOG) ---
+        // Přidali jsme ID a CONTENT (obsah) pro každý článek
+        const articles = [
+            {
+                id: 'biofyzika-intro',
+                title: 'Úvod do biofyziky: Proč je to budoucnost?',
+                date: '10. března 2024',
+                readTime: '5 min čtení',
+                summary: 'Biofyzika není jen o složitých rovnicích. Je to most mezi biologickými systémy a fyzikálními zákony, který nám umožňuje pochopit život na molekulární úrovni.',
+                content: `
+                    <p class="mb-4">Biofyzika je interdisciplinární věda, která používá metody a teorie fyziky ke studiu biologických systémů. Od molekul, jako je DNA a proteiny, až po složité sítě neuronů v našem mozku.</p>
+                    <p class="mb-4">Proč je to důležité? Protože biologie se stává čím dál více kvantitativní vědou. Už nám nestačí jen popsat, že "buňka se dělí". Chceme vědět, jaké síly působí na chromozomy, kolik energie spotřebují molekulární motory a jak se šíří signál po membráně.</p>
+                    <h3 class="text-xl font-bold mt-6 mb-3">Fyzika v živém těle</h3>
+                    <p class="mb-4">Představte si vaše tělo jako stroj. Srdce je pumpa (hydrodynamika), svaly jsou páky (mechanika), nervy jsou dráty (elektřina). Biofyzika nám dává nástroje, jak tyto procesy nejen popsat, ale i předpovědět a léčit.</p>
+                `
+            },
+            {
+                id: 'difuze-bunky',
+                title: 'Jak funguje difuze v buňkách?',
+                date: '25. února 2024',
+                readTime: '8 min čtení',
+                summary: 'Vysvětlení náhodné procházky (random walk) a Fickových zákonů v kontextu buněčného transportu. Proč buňky nemohou být libovolně velké?',
+                content: `
+                    <p class="mb-4">Difuze je základním způsobem transportu látek na krátké vzdálenosti. Je poháněna tepelným pohybem molekul – tzv. Brownovým pohybem.</p>
+                    <p class="mb-4">Klíčovým konceptem je, že čas potřebný k difuzi roste s druhou mocninou vzdálenosti: $$ t \approx \frac{x^2}{2D} $$ Kde <em>D</em> je difuzní koeficient. To znamená, že pokud zdvojnásobíme vzdálenost, difuze trvá čtyřikrát déle.</p>
+                    <h3 class="text-xl font-bold mt-6 mb-3">Limit velikosti buněk</h3>
+                    <p class="mb-4">Právě kvůli této závislosti nemohou být buňky libovolně velké. Kdyby byla bakterie velká jako člověk, kyslík by se difuzí do jejího středu dostal až za miliony let. Proto větší organismy potřebují oběhový systém – aby obešli pomalost difuze na velké vzdálenosti konvekcí (prouděním krve).</p>
+                `
+            }
         ];
 
         // --- APLIKAČNÍ LOGIKA ---
@@ -90,17 +119,15 @@
 
         function initApp() {
             renderPortfolioGrid();
+            renderArticlesList(); 
             renderContent();
         }
 
-        // Funkce která vygeneruje HTML kartičky pro každý projekt v poli 'projects'
         function renderPortfolioGrid() {
             const gridContainer = document.getElementById('portfolio-grid');
             if (!gridContainer) return;
 
             let html = '';
-            
-            // 1. Vygenerování existujících projektů
             projects.forEach(project => {
                 html += `
                 <div onclick="changePage('${project.id}')" class="cursor-pointer group bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition duration-200 overflow-hidden">
@@ -115,16 +142,71 @@
                     </div>
                 </div>`;
             });
-
-            // 2. Přidání placeholderu "Již brzy" na konec
             html += `
                 <div class="bg-gray-50 rounded-xl border border-dashed border-gray-200 p-6 flex flex-col items-center justify-center text-center opacity-60">
                     <span class="text-3xl mb-2">🚧</span>
                     <h3 class="text-lg font-medium text-secondary">Další projekt již brzy</h3>
                 </div>
             `;
-
             gridContainer.innerHTML = html;
+        }
+
+        function renderArticlesList() {
+            const articlesContainer = document.getElementById('articles-list');
+            if (!articlesContainer) return;
+
+            let html = '';
+            articles.forEach(article => {
+                // Zde používáme onclick="openArticle(...)" místo href
+                html += `
+                <article class="flex flex-col sm:flex-row gap-6 p-6 bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition duration-200">
+                    <div class="flex-1">
+                        <div class="flex items-center text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">
+                            <span>${article.date}</span>
+                            <span class="mx-2">&bull;</span>
+                            <span>${article.readTime}</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-primary mb-2 hover:text-blue-600 transition duration-150 cursor-pointer" onclick="openArticle('${article.id}')">
+                            ${article.title}
+                        </h3>
+                        <p class="text-secondary leading-relaxed mb-4">
+                            ${article.summary}
+                        </p>
+                        <button onclick="openArticle('${article.id}')" class="inline-flex items-center text-sm font-semibold text-primary hover:text-blue-600 transition duration-150">
+                            Číst více &rarr;
+                        </button>
+                    </div>
+                </article>`;
+            });
+            articlesContainer.innerHTML = html;
+        }
+
+        // Nová funkce pro otevření článku
+        function openArticle(articleId) {
+            const article = articles.find(a => a.id === articleId);
+            if (!article) return;
+
+            // Naplnění detailu článku
+            const detailContainer = document.getElementById('article-detail-content');
+            detailContainer.innerHTML = `
+                <div class="flex items-center text-sm text-gray-400 mb-4 font-medium uppercase tracking-wide">
+                    <span>${article.date}</span>
+                    <span class="mx-2">&bull;</span>
+                    <span>${article.readTime}</span>
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-serif font-bold text-primary mb-8">${article.title}</h2>
+                <div class="prose max-w-none text-lg text-secondary leading-relaxed">
+                    ${article.content}
+                </div>
+            `;
+
+            // Přepnutí na stránku detailu
+            changePage('article-detail');
+            
+            // Re-render MathJax pro rovnice v novém obsahu
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
         }
 
         function changePage(pageName) {
@@ -140,7 +222,8 @@
             
             if (!mainContent || !topNav) return;
 
-            const pages = ['home', 'about', 'portfolio', 'tutoring', 'hematopoiesis']; // Přidat ID nových stránek sem
+            // Seznam všech platných ID sekcí (přidáno 'article-detail')
+            const pages = ['home', 'about', 'articles', 'portfolio', 'tutoring', 'hematopoiesis', 'article-detail']; 
             pages.forEach(id => {
                 const element = document.getElementById(id + '-page');
                 if (element) {
@@ -158,6 +241,7 @@
             if (activePageElement) {
                 activePageElement.classList.remove('hidden');
             } else {
+                // Fallback na home
                 currentPage = 'home';
                 document.getElementById('home-page')?.classList.remove('hidden');
                 topNav.classList.add('hidden');
@@ -166,6 +250,7 @@
 
         window.addEventListener('hashchange', () => {
             const newPage = window.location.hash.substring(1) || 'home';
+            // Simple check to prevent infinite loops or redundant renders
             if (newPage !== currentPage) {
                 currentPage = newPage;
                 renderContent();
@@ -185,6 +270,8 @@
             <!-- Navigation Buttons (Far right) -->
             <div class="flex flex-wrap justify-center md:justify-end gap-3 text-sm font-medium">
                 <a href="#about" onclick="changePage('about')" class="block px-3 py-1 bg-primary text-white rounded-lg shadow-sm hover:bg-gray-700 transition duration-150 whitespace-nowrap">O mně</a>
+                <!-- New Articles Button -->
+                <a href="#articles" onclick="changePage('articles')" class="block px-3 py-1 bg-primary text-white rounded-lg shadow-sm hover:bg-gray-700 transition duration-150 whitespace-nowrap">Články</a>
                 <a href="#portfolio" onclick="changePage('portfolio')" class="block px-3 py-1 bg-primary text-white rounded-lg shadow-sm hover:bg-gray-700 transition duration-150 whitespace-nowrap">Portfolio</a>
                 <a href="#tutoring" onclick="changePage('tutoring')" class="block px-3 py-1 bg-primary text-white rounded-lg shadow-sm hover:bg-gray-700 transition duration-150 whitespace-nowrap">Soukromé Doučování</a>
             </div>
@@ -219,7 +306,8 @@
                     <!-- Navigation Buttons (Moved here for Home Page ONLY) -->
                     <nav class="flex flex-wrap justify-center gap-3 text-sm font-medium px-4">
                         <a href="#about" onclick="changePage('about')" class="block px-4 py-2 bg-primary text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-150 whitespace-nowrap">O mně</a>
-                        <!-- Removed Blogy o Akademickém Výzkumu -->
+                        <!-- New Articles Button -->
+                        <a href="#articles" onclick="changePage('articles')" class="block px-4 py-2 bg-primary text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-150 whitespace-nowrap">Články</a>
                         <a href="#portfolio" onclick="changePage('portfolio')" class="block px-4 py-2 bg-primary text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-150 whitespace-nowrap">Portfolio</a>
                         <a href="#tutoring" onclick="changePage('tutoring')" class="block px-4 py-2 bg-primary text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-150 whitespace-nowrap">Soukromé Doučování</a>
                     </nav>
@@ -238,7 +326,35 @@
             </div>
         </section>
 
-        <!-- 3. PORTFOLIO PAGE CONTENT -->
+        <!-- 3. ČLÁNKY (BLOG) LIST PAGE -->
+        <section id="articles-page" class="hidden">
+            <h2 class="text-3xl font-serif font-bold text-primary mb-8 border-b pb-2">Články</h2>
+            <div class="prose max-w-none text-lg text-secondary mb-8">
+                <p>Zde publikuji své myšlenky, edukativní texty a novinky ze světa biofyziky.</p>
+            </div>
+            <!-- Articles List Container -->
+            <div id="articles-list" class="space-y-6">
+                <!-- Content injected by renderArticlesList() -->
+            </div>
+        </section>
+
+        <!-- 4. ČLÁNEK DETAIL (Single Article View) -->
+        <section id="article-detail-page" class="hidden">
+            <!-- Back link -->
+            <div class="mb-6">
+                <a href="#articles" onclick="changePage('articles')" class="inline-flex items-center text-sm text-secondary hover:text-primary transition duration-150">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    Zpět na Články
+                </a>
+            </div>
+            
+            <!-- Article Content Container -->
+            <div id="article-detail-content">
+                <!-- Content injected by openArticle() -->
+            </div>
+        </section>
+
+        <!-- 5. PORTFOLIO PAGE CONTENT -->
         <section id="portfolio-page" class="hidden">
             <h2 class="text-3xl font-serif font-bold text-primary mb-8 border-b pb-2">Portfolio</h2>
             
@@ -335,7 +451,7 @@ c_20, lag_20 = solve_blood_production(T_delay=20) # Nemocný
             </div>
         </section>
 
-        <!-- 4. SOUKROMÉ DOUČOVÁNÍ PAGE CONTENT -->
+        <!-- 6. SOUKROMÉ DOUČOVÁNÍ PAGE CONTENT -->
         <section id="tutoring-page" class="hidden">
             <h2 class="text-3xl font-serif font-bold text-primary mb-6 border-b pb-2">Soukromé Doučování</h2>
             <div class="text-secondary text-lg">
