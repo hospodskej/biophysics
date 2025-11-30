@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Biophysics Bro</title>
+    
+    <!-- MathJax pro krásné rovnice (LaTeX style) -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Load Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configure Tailwind to use Inter font and simple colors --><script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Lora', 'serif'],
+                    },
+                    colors: {
+                        'primary': '#1f2937', // Dark slate gray (for text and buttons)
+                        'secondary': '#4b5563', // Medium gray (for description text)
+                        'background': '#f9fafb', // Lightest gray
+                        'blue-icon-bg': '#c7d2fe', // Light blue for the brain icon container
+                        'blood-red': '#dc2626', // Adjusted red for the new icon style
+                        'hemoglobin-dark': '#991b1b', // Darker red for heme groups
+                        'hemoglobin-light': '#fecaca', // Lighter pink for protein structure
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom styles for better readability and feel */
+        body {
+            background-color: theme('colors.background');
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        /* Ensure content width is constrained on large screens */
+        .content-container {
+            max-width: 800px; /* Optimal reading width for text */
+        }
+        main {
+            flex-grow: 1; /* Allows main content to push the footer down */
+        }
+        /* Syntax highlighting for code block */
+        pre {
+            background-color: #f3f4f6;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-size: 0.875rem;
+            border: 1px solid #e5e7eb;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lora:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="font-sans text-primary" onload="initApp()">
+
+    <!-- JavaScript for Client-Side Routing and State Management -->
+    <script>
+        // --- DATA KONFIGURACE ---
+        // Zde jednoduše přidávejte nové projekty. HTML se vygeneruje samo.
+        const projects = [
+            {
+                id: 'hematopoiesis', // Musí odpovídat ID sekce (např. id="hematopoiesis-page")
+                title: 'Model Krvetvorby',
+                description: 'Simulace regulace krvetvorby pomocí Mackey-Glassovy diferenciální rovnice se zpožděním. Porovnání zdravého a patologického stavu.',
+                // SVG ikonka (Vektorová/Flat červená krvinka - dle screenshotu)
+                iconSvg: `
+                    <svg class="w-16 h-16" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <g transform="rotate(-30 50 50)">
+                            <ellipse cx="50" cy="50" rx="45" ry="38" fill="#dc2626" />
+                            <ellipse cx="50" cy="45" rx="28" ry="20" fill="#991b1b" />
+                            <path d="M 35 75 Q 50 82 65 75" stroke="#fca5a5" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.8"/>
+                        </g>
+                    </svg>`
+            },
+            // Zde můžete přidat další objekt pro nový projekt...
+        ];
+
+        // --- APLIKAČNÍ LOGIKA ---
+
+        const initialPage = window.location.hash.substring(1) || 'home';
+        let currentPage = initialPage;
+
+        function initApp() {
+            renderPortfolioGrid();
+            renderContent();
+        }
+
+        // Funkce která vygeneruje HTML kartičky pro každý projekt v poli 'projects'
+        function renderPortfolioGrid() {
+            const gridContainer = document.getElementById('portfolio-grid');
+            if (!gridContainer) return;
+
+            let html = '';
+            
+            // 1. Vygenerování existujících projektů
+            projects.forEach(project => {
+                html += `
+                <div onclick="changePage('${project.id}')" class="cursor-pointer group bg-white rounded-xl shadow-sm hover:shadow-md border border-gray-100 transition duration-200 overflow-hidden">
+                    <div class="p-6 flex flex-col items-center text-center">
+                        <div class="w-20 h-20 flex items-center justify-center mb-4 transform group-hover:scale-110 transition duration-200">
+                            ${project.iconSvg}
+                        </div>
+                        <h3 class="text-xl font-bold text-primary mb-2 group-hover:text-blood-red transition duration-200">${project.title}</h3>
+                        <p class="text-sm text-secondary line-clamp-3">
+                            ${project.description}
+                        </p>
+                    </div>
+                </div>`;
+            });
+
+            // 2. Přidání placeholderu "Již brzy" na konec
+            html += `
+                <div class="bg-gray-50 rounded-xl border border-dashed border-gray-200 p-6 flex flex-col items-center justify-center text-center opacity-60">
+                    <span class="text-3xl mb-2">🚧</span>
+                    <h3 class="text-lg font-medium text-secondary">Další projekt již brzy</h3>
+                </div>
+            `;
+
+            gridContainer.innerHTML = html;
+        }
+
+        function changePage(pageName) {
+            currentPage = pageName;
+            window.location.hash = pageName;
+            renderContent();
+            window.scrollTo(0, 0);
+        }
+
+        function renderContent() {
+            const mainContent = document.getElementById('main-content');
+            const topNav = document.getElementById('top-navbar');
+            
+            if (!mainContent || !topNav) return;
+
+            const pages = ['home', 'about', 'portfolio', 'tutoring', 'hematopoiesis']; // Přidat ID nových stránek sem
+            pages.forEach(id => {
+                const element = document.getElementById(id + '-page');
+                if (element) {
+                    element.classList.add('hidden');
+                }
+            });
+
+            if (currentPage === 'home') {
+                topNav.classList.add('hidden');
+            } else {
+                topNav.classList.remove('hidden');
+            }
+
+            const activePageElement = document.getElementById(currentPage + '-page');
+            if (activePageElement) {
+                activePageElement.classList.remove('hidden');
+            } else {
+                currentPage = 'home';
+                document.getElementById('home-page')?.classList.remove('hidden');
+                topNav.classList.add('hidden');
+            }
+        }
+
+        window.addEventListener('hashchange', () => {
+            const newPage = window.location.hash.substring(1) || 'home';
+            if (newPage !== currentPage) {
+                currentPage = newPage;
+                renderContent();
+            }
+        });
+    </script>
+
+    <!-- TOP NAVIGATION BAR (Visible on all pages EXCEPT Home) -->
+    <nav id="top-navbar" class="sticky top-0 z-10 bg-white border-b border-gray-100 shadow-sm hidden">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center">
+            
+            <!-- Site Title / Home Link (Far left) -->
+            <a href="#home" onclick="changePage('home')" class="text-xl font-bold font-serif text-primary hover:text-secondary transition duration-150 whitespace-nowrap mb-3 md:mb-0 md:mr-auto">
+                The Biophysics Bro
+            </a>
+
+            <!-- Navigation Buttons (Far right) -->
+            <div class="flex flex-wrap justify-center md:justify-end gap-3 text-sm font-medium">
+                <a href="#about" onclick="changePage('about')" class="block px-3 py-1 bg-primary text-white rounded-lg shadow-sm hover:bg-gray-700 transition duration-150 whitespace-nowrap">O mně</a>
+                <a href="#portfolio" onclick="changePage('portfolio')" class="block px-3 py-1 bg-primary text-white rounded-lg shadow-sm hover:bg-gray-700 transition duration-150 whitespace-nowrap">Portfolio</a>
+                <a href="#tutoring" onclick="changePage('tutoring')" class="block px-3 py-1 bg-primary text-white rounded-lg shadow-sm hover:bg-gray-700 transition duration-150 whitespace-nowrap">Soukromé Doučování</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <div id="main-content" class="content-container mx-auto px-4 sm:px-6 lg:px-8 mt-8 mb-20">
+
+        <!-- 1. HOME PAGE CONTENT (Splash Page Style) -->
+        <section id="home-page" class="hidden">
+            <div class="bg-white py-12 mb-12">
+                <div class="text-center">
+                    
+                    <!-- Icon/Image -->
+                    <div class="mx-auto w-24 h-24 sm:w-28 sm:h-28 bg-blue-icon-bg rounded-lg flex items-center justify-center mb-6 shadow-md">
+                        <svg class="w-16 h-16 text-secondary" fill="currentColor" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M495.9 144c-3.1-13.4-14.9-23.7-29.7-25.2C445.6 115.5 410 96 368 96c-59 0-112.5 13.9-158.4 45.6-3.8 2.6-7.3 5.4-10.7 8.5-6.5-7.5-13.9-14-22.3-19.6C129.5 95.9 76 80 16 80 7.3 80 0 87.3 0 96v256c0 8.7 7.3 16 16 16 48.4 0 97.4 12.8 143.9 33.9 44.5 20.3 93.9 31.9 144.1 31.9 48.6 0 96.5-11.2 140.7-31.4 44.5-20.4 92.5-32.6 140.5-32.6 8.7 0 16-7.3 16-16V160c0-8.7-7.3-16-16-16zm-388.5 16C122.9 144 144 152 144 152v-48c-1.3-1.6-4.9-4-15.3-4C102.3 100 68 120 40.2 144c29.1-13.3 59.8-20.7 90.7-21.7zM368 208c-4.4 0-8-3.6-8-8v-32c0-4.4 3.6-8 8-8s8 3.6 8 8v32c0 4.4-3.6 8-8 8zm96-48c-1.3-1.6-4.9-4-15.3-4-26.4 0-51.2 7-73.4 19.3-3.9-6.3-8.6-12-14.1-17.1-34.9-32.1-85.1-49.3-143.2-49.3-46.7 0-93.7 10.5-135.2 30.6-40.4 19.3-77.5 44.6-109.8 76.8 13.5 6.4 28.1 11.2 43.1 14.4 32.8 6.9 67.5 10.4 102.4 10.4 39.4 0 78.4-4.8 116.1-14.3 35.8-9.1 70.3-21.6 103.5-37.4 3.1-1.5 6.4-3.1 9.6-4.9 31.2-18.4 60.1-39.7 85.3-64.4zm0 160c-2.4 0-4.7-.1-7.1-.4-22.1-2.4-43.9-7.2-64.8-14.2-22.6-7.5-44.5-16.7-65.7-27.4-4.4-2.2-9-3.4-13.8-3.4-2.8 0-5.5.6-8.2 1.8-1.5-.7-3.1-1.3-4.7-1.8-4.4-.7-9-.9-13.5-.7-6.9 0-13.9 1.4-20.7 4.2-24.9 10.3-49.1 21.6-72.3 33.9-3.2 1.7-6.5 3.1-9.9 4.2-32.9 10.9-66.5 18.2-101.4 21.6-32.7 3.2-65.2 4.8-97.8 4.8-8.7 0-16-7.3-16-16V160c0-8.7 7.3-16 16-16 48.4 0 97.4 12.8 143.9 33.9 44.5 20.3 93.9 31.9 144.1 31.9 48.6 0 96.5-11.2 140.7-31.4 44.5-20.4 92.5-32.6 140.5-32.6 8.7 0 16-7.3 16-16V160c0-8.7-7.3-16-16-16z"/>
+                        </svg>
+                    </div>
+                    
+                    <!-- Title -->
+                    <h1 class="text-4xl sm:text-5xl font-serif font-medium text-primary mb-3">
+                        The Biophysics Bro
+                    </h1>
+
+                    <!-- Description -->
+                    <p class="text-md sm:text-lg text-secondary leading-relaxed mb-10 max-w-lg mx-auto">
+                        Popularizace biofyziky a komplexních věd. Blog o výzkumu a úvahách na průsečíku biologických systémů, fyziky a vzdělávání.
+                    </p>
+
+                    <!-- Navigation Buttons (Moved here for Home Page ONLY) -->
+                    <nav class="flex flex-wrap justify-center gap-3 text-sm font-medium px-4">
+                        <a href="#about" onclick="changePage('about')" class="block px-4 py-2 bg-primary text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-150 whitespace-nowrap">O mně</a>
+                        <!-- Removed Blogy o Akademickém Výzkumu -->
+                        <a href="#portfolio" onclick="changePage('portfolio')" class="block px-4 py-2 bg-primary text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-150 whitespace-nowrap">Portfolio</a>
+                        <a href="#tutoring" onclick="changePage('tutoring')" class="block px-4 py-2 bg-primary text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-150 whitespace-nowrap">Soukromé Doučování</a>
+                    </nav>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. O MNĚ (ABOUT) PAGE CONTENT -->
+        <section id="about-page" class="hidden">
+            <h2 class="text-3xl font-serif font-bold text-primary mb-6 border-b pb-2">O mně</h2>
+            <div class="prose max-w-none text-lg text-secondary">
+                <p>Tato stránka bude obsahovat informace o mé osobě, mé akademické cestě a mé motivaci k popularizaci biofyziky a vědy obecně.</p>
+                <p>Mým cílem je zjednodušit složité koncepty a ukázat, jak se fyzika, biologie a matematika prolínají v reálném světě, zejména v kontextu biologických systémů.</p>
+                <p>Brzy zde naleznete podrobnější životopis, seznam publikací a mé vzdělávací filosofie.</p>
+            </div>
+        </section>
+
+        <!-- 3. PORTFOLIO PAGE CONTENT -->
+        <section id="portfolio-page" class="hidden">
+            <h2 class="text-3xl font-serif font-bold text-primary mb-8 border-b pb-2">Portfolio</h2>
+            
+            <!-- Portfolio Grid (Generated by JS) -->
+            <div id="portfolio-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <!-- Content injected by renderPortfolioGrid() -->
+            </div>
+        </section>
+
+        <!-- NEW: HEMATOPOIESIS PROJECT PAGE -->
+        <section id="hematopoiesis-page" class="hidden">
+            <!-- Back link -->
+            <div class="mb-6">
+                <a href="#portfolio" onclick="changePage('portfolio')" class="inline-flex items-center text-sm text-secondary hover:text-primary transition duration-150">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    Zpět na Portfolio
+                </a>
+            </div>
+
+            <h2 class="text-3xl font-serif font-bold text-primary mb-4">Modelování Krvetvorby [Image of hematopoiesis process]</h2>
+            
+            <!-- POPULARIZACNI TEXT START -->
+            <div class="prose max-w-none mb-8">
+                <p class="text-lg text-secondary leading-relaxed mb-4">
+                    Věděli jste, že vaše tělo každou vteřinu vyrobí miliony nových červených krvinek? Je to fascinující, ale zároveň velmi křehký systém. Červené krvinky totiž nemohou žít věčně – nemají jádro a nedokážou se dělit. Po určité době se "opotřebují" a zaniknou.
+                </p>
+                <p class="text-lg text-secondary leading-relaxed mb-4">
+                    Aby vaše tělo fungovalo, musí neustále vyrábět nové. Tuto úlohu plní <strong>kostní dřeň</strong>, jakási továrna na krev. Celý proces ale není okamžitý. Tělo nejprve musí zjistit, že má málo kyslíku (signál pro ledviny), ledviny vyplaví hormon (erytropoetin) a ten teprve dá povel kostní dřeni: "Začni vyrábět!". A než se nová krvinka vyrobí a dozraje, trvá to přibližně <strong>6 dní</strong>.
+                </p>
+                <p class="text-lg text-secondary leading-relaxed mb-4">
+                    Představte si to jako sprchování. Otočíte kohoutkem (povel k výrobě), ale teplá voda (krvinky) teče až po chvíli (zpoždění). Pokud byste netrpělivě točili kohoutkem sem a tam, voda by střídavě vařila a mrazila. Podobně i v našem těle může toto zpoždění způsobit problémy – pokud je příliš dlouhé, hladina krvinek začne nebezpečně kolísat. Tomuto jevu říkáme "dynamická nemoc" a my si ji zde nasimulujeme pomocí matematiky.
+                </p>
+            </div>
+            <!-- POPULARIZACNI TEXT END -->
+
+            <div class="prose max-w-none">
+                <h3 class="text-xl font-bold text-primary mb-3">Matematický model</h3>
+                <p class="text-secondary mb-4">
+                    Základní dynamiku tohoto systému lze popsat pomocí tzv. <strong>Mackey-Glassovy rovnice</strong>. Je to diferenciální rovnice se zpožděním, která říká: "Změna počtu krvinek se rovná tomu, co se vyrobilo (se zpožděním), mínus to, co přirozeně zaniklo."
+                    <div class="overflow-x-auto py-4 text-primary text-center text-lg">
+                        <!-- MathJax Formula -->
+                        $$ \frac{dc}{dt} = \underbrace{-gc(t)}_{\text{zánik}} + \underbrace{\frac{\lambda c(t - T)}{1 + c^m(t - T)}}_{\text{produkce se zpožděním}} $$
+                    </div>
+                </p>
+
+                <h3 class="text-xl font-bold text-primary mb-3">Python Implementace</h3>
+                <p class="text-secondary mb-2">Níže je kód použitý pro simulaci dvou scénářů: zdravého člověka (zpoždění T=6 dní) a patologického stavu (T=20 dní):</p>
+                
+                <!-- Code Snippet -->
+                <pre><code class="language-python">import numpy as np
+import matplotlib.pyplot as plt
+
+# 1. Definice parametrů
+g = 0.1         # úbytek (d^-1)
+lam = 0.2       # produkce (d^-1)
+m = 10          # strmost regulace
+c0 = 0.1        # počáteční podmínka
+t_max = 1000    # maximální čas (dny)
+dt = 0.1        # časový krok
+
+t = np.arange(0, t_max + dt, dt)
+n_steps = len(t)
+
+def mackey_glass(c_now, c_delayed, g, lam, m):
+    term_production = (lam * c_delayed) / (1 + c_delayed**m)
+    term_decay = -g * c_now
+    return term_decay + term_production
+
+def solve_blood_production(T_delay):
+    delay_steps = int(np.round(T_delay / dt))
+    c = np.zeros(n_steps)
+    c[0] = c0
+    
+    for i in range(n_steps - 1):
+        current_c = c[i]
+        if i >= delay_steps:
+            delayed_c = c[i - delay_steps]
+        else:
+            delayed_c = c0
+            
+        dcdt = mackey_glass(current_c, delayed_c, g, lam, m)
+        c[i + 1] = current_c + dcdt * dt
+        
+    return c, delay_steps
+
+# Spuštění simulace
+c_6, lag_6 = solve_blood_production(T_delay=6)   # Zdravý
+c_20, lag_20 = solve_blood_production(T_delay=20) # Nemocný
+</code></pre>
+                
+                <div class="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-100 text-secondary text-sm">
+                    <strong>Výsledek:</strong> Pro T=6 dní se systém ustálí na stabilní hodnotě (homeostáza), což je žádoucí stav. Pro T=20 dní však vznikají stabilní oscilace, které reprezentují nemoc – hladina krvinek neustále kolísá mezi nadbytkem a nedostatkem.
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. SOUKROMÉ DOUČOVÁNÍ PAGE CONTENT -->
+        <section id="tutoring-page" class="hidden">
+            <h2 class="text-3xl font-serif font-bold text-primary mb-6 border-b pb-2">Soukromé Doučování</h2>
+            <div class="text-secondary text-lg">
+                <p>Detaily o doučovacích službách (fyzika, matematika, biologie), ceníku a dostupnosti.</p>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer (Fixed to bottom regardless of content length) --><footer class="bg-white border-t border-gray-100 py-6 mt-auto">
+        <div class="content-container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-sm text-secondary">
+            <p class="mb-4 md:mb-0">&copy; 2024 The Biophysics Bro. Všechna práva vyhrazena.</p>
+            <div class="space-x-6">
+                <!-- Instagram link with minimalist SVG logo --><a href="https://www.instagram.com/pavelpatockaaa/" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition duration-150">
+                    <svg class="w-6 h-6 inline-block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
